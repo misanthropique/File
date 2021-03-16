@@ -10,6 +10,12 @@ class File
 private:
 	std::atomic_uint64_t mFileIdentifier;
 
+	// This member variable is for errors that occur
+	// at the interface layer, before going down into the
+	// protocol specific codes; which are stored in the
+	// file context object.
+	int mErrorCode;
+
 public:
 	enum IOFlag : uint32_t
 	{
