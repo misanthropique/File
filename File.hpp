@@ -29,6 +29,18 @@ public:
 	~File();
 
 	/**
+	 * Write to the end of the file the requested number of bytes
+	 * without updating the file position.
+	 * @param buffer Pointer to an array of const bytes.
+	 * @param count The number of byte to write from {@param buffer}.
+	 * @return The number of bytes appended to the file is returned. This may be less
+	 *         than the requested number of bytes, and the cuase can be retrieved via
+	 *         errorMessage(). On error, -1 is returned and the error message can
+	 *         be retrieved via errorMessage().
+	 */
+	int64_t append( const uint8_t* buffer, uint32_t count );
+
+	/**
 	 * Read from the file the requested number of bytes without updating the file position.
 	 * @param buffer Pointer to a byte array large enough to hold the requested data.
 	 * @param count The number of bytes to read into {@param buffer}.
@@ -56,6 +68,11 @@ public:
 	 *         be retrieved via errorMessage().
 	 */
 	int64_t read( uint8_t* buffer, uint32_t count );
+
+	/**
+	 * Length of the file in bytes.
+	 */
+	int64_t size() const;
 
 	/**
 	 * Write to the file the requested number of bytes and
