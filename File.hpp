@@ -24,14 +24,31 @@ public:
 		SEEK = 0x4
 	};
 
+	/**
+	 * Default constructor to a null file handle.
+	 */
 	File() noexcept;
 
-	File( const std::string& filePath, File::IOFlag mode );
+	/**
+	 * 
+	 */
+	File( const std::string& filepath, File::IOFlag mode );
 
+	/**
+	 * File copy constructor.
+	 * @param other Const reference to the File instance to copy.
+	 */
 	File( const File& other );
 
+	/**
+	 * File move constructor.
+	 * @param other R-Value to the File instance to move to this instance.
+	 */
 	File( File&& other ) noexcept;
 
+	/**
+	 * File destructor shall release all resources.
+	 */
 	~File();
 
 	/**
@@ -45,6 +62,33 @@ public:
 	 *         be retrieved via errorMessage().
 	 */
 	int64_t append( const uint8_t* buffer, uint32_t count );
+
+	/**
+	 * Close the file and release the resources if applicable.
+	 */
+	void close();
+
+	/**
+	 * Open a file to this File instance.
+	 * @param filepath Path to a file or a URI.
+	 * @param mode Mode in which to open the file.
+	 * @return True is returned upon opening the file successfully. The error shall be set if false is returned.
+	 */
+	bool open( const std::string& filepath, File::IOFlag mode );
+
+	/**
+	 * File move assignment operator.
+	 * @param other R-Value to a File instance to move to this instance.
+	 * @return Reference to this File instance is returned.
+	 */
+	File& operator=( File&& other );
+
+	/**
+	 * File copy assignment operator.
+	 * @param other Const reference to a File instance to copy to this instance.
+	 * @return Reference to this File instance is returned.
+	 */
+	File& operator=( const File& other );
 
 	/**
 	 * Read from the file the requested number of bytes without updating the file position.
@@ -77,6 +121,7 @@ public:
 
 	/**
 	 * Length of the file in bytes.
+	 * @return Length of the file in bytes. If the length is indeterminate, then -1 is returned.
 	 */
 	int64_t size() const;
 
