@@ -4,17 +4,23 @@
  * or part by any means, without express prior written agreement is prohibited.
  */
 #include <cerrno>
+#include <cmath>
 #include <cstdint>
 #include <mutex>
+#include <string>
+#include <sys/time.h>
 
 #include "File.hpp"
+#include "FileContext.hpp"
 
 File::File() noexcept :
 	mFileIdentifier( 0 )
 {
 }
 
-int64_t File::append( const uint8_t* buffer, uint32_t count )
+int64_t File::append(
+	const uint8_t* buffer,
+	uint32_t count )
 {
 	if ( 0 == mFileIdentifier.load() )
 	{
@@ -62,7 +68,51 @@ int64_t File::append( const uint8_t* buffer, uint32_t count )
 	return -1;
 }
 
-int64_t File::peek( uint8_t* buffer, uint32_t count )
+double File::byteRate(
+	File::IOFlag ioFlag ) const
+{
+	if ( 0 == mFileIdentifier.load() )
+	{
+		mErrorCode = EBADF;
+		return std::nan( "0" );
+	}
+
+	std::unique_lock< std::mutex > contextLock;
+	auto context = _get_context( mFileIdentifier, contextLock );
+
+	if ( nullptr == context )
+	{
+		mErrorCode = EBADF;
+		return std::nan( "0" );
+	}
+
+	if ( File::IOFlag::READ & ioFlag )
+	{
+		if ( 0 == context->_M_NumberObservations[ FILE_IO_STATS_READ ] )
+		{
+			return 0;
+		}
+
+		return static_cast< double >( context->_M_NumberObservations[ FILE_IO_STATS_READ ] )
+			/ context->_M_SumInverseRates[ FILE_IO_STATS_READ ];
+	}
+	else if ( File::IOFlag::WRITE & ioFlag )
+	{
+		if ( 0 == context->_M_NumberObservations[ FILE_IO_STATS_WRITE ] )
+		{
+			return 0;
+		}
+
+		return static_cast< double >( context->_M_NumberObservations[ FILE_IO_STATS_WRITE ] )
+			/ context->_M_SumInverseRates( FILE_IO_STATS_WRITE ]
+	}
+
+	return std::nan( "0" );
+}
+
+int64_t File::peek(
+	uint8_t* buffer,
+	uint32_t count )
 {
 	if ( 0 == mFileIdentifier.load() )
 	{
@@ -110,7 +160,9 @@ int64_t File::peek( uint8_t* buffer, uint32_t count )
 	return -1;
 }
 
-int64_t File::read( uint8_t* buffer, uint32_t count )
+int64_t File::read(
+	uint8_t* buffer,
+	uint32_t count )
 {
 	if ( 0 == mFileIdentifier )
 	{
@@ -158,7 +210,9 @@ int64_t File::read( uint8_t* buffer, uint32_t count )
 	return -1;
 }
 
-int64_t File::write( const uint8_t* buffer, uint32_t count )
+int64_t File::write(
+	const uint8_t* buffer,
+	uint32_t count )
 {
 	if ( 0 == mFileIdentifier.load() )
 	{
