@@ -19,8 +19,11 @@ struct FileContext
 {
 	std::mutex _M_Mutex;
 	uint32_t _M_ReferenceCount;
+
+	// Use the harmonic mean to compute the average of rates.
 	double _M_SumInverseRates[ FILE_IO_STATS_SIZE ];
 	uint64_t _M_NumberObservations[ FILE_IO_STATS_SIZE ];
+
 	int64_t _M_FilePosition;
 	File::IOFlag _M_Capabilities;
 	int _M_ErrorCode;
