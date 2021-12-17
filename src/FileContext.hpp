@@ -36,6 +36,17 @@ struct FileContext
 #define FILE_CAN_WRITE( context ) ( ( context )->_M_Capabilities & File::IOFlag::WRITE )
 
 /*
+ * Create a context for the requested file. Should a context already
+ * exist for the file, that identifier is returned.
+ * @param filepath Const reference to the file.
+ * @param mode Mode in which to open the file.
+ * @return A file identifier for the requested file is returned.
+ */
+uint64_t _create_context(
+	const std::string& filepath,
+	File::IOFlag mode );
+
+/*
  * Get the context for the file associated with the given identifier.
  * @param fileIdentifier Identifier to the file context.
  * @param contextLock The lock for acquiring the context.
@@ -46,7 +57,15 @@ struct FileContext* _get_context(
 	uint64_t fileIdentifier,
 	std::unique_lock< std::mutex >& contextLock );
 
-/**
+/*
+ * Decrement the reference count, and release the resources if
+ * no additional File instances point to the context.
+ * @param fileIdentifier identifier for the file to be released.
+ */
+void _release_context(
+	uint64_t fileIdentifier );
+
+/*
  * Updated the IO stats with the latest information.
  * @param sumInverseRates A reference to the sum of the inverse of the rate.
  * @param numberObservations A reference to the count of the number of rate observations made.
