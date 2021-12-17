@@ -9,6 +9,7 @@
 #include <mutex>
 #include <string>
 #include <sys/time.h>
+#include <utility>
 
 #include "File.hpp"
 #include "FileContext.hpp"
@@ -16,6 +17,20 @@
 File::File() noexcept :
 	mFileIdentifier( 0 )
 {
+}
+
+File::File(
+	File&& other )
+{
+	mFileIdentifier.store( other.mFileIdentifier.exchange( 0 ) );
+	mErrorCode = std::exchange( other.mErrorCode, 0 );
+}
+
+File::File(
+	const File& other )
+{
+	mFileIdentifier.store( other.mFileIdentifier.load() );
+	mErrorCode = other.mErrorCode;
 }
 
 int64_t File::append(
@@ -108,6 +123,30 @@ double File::byteRate(
 	}
 
 	return std::nan( "0" );
+}
+
+File& File::operator=(
+	File&& other )
+{
+	if ( this != &other )
+	{
+		mFileIdentifier.store( other.mFileIdentifier.exchange( 0 ) );
+		mErrorCode = std::exchange( other.mErrorCode, 0 );
+	}
+
+	return *this;
+}
+
+File& File::operator=(
+	const File& other )
+{
+	if ( this != &other )
+	{
+		mFileIdentifier.store( other.mFileIdentifier.load() );
+		mErrorCode = other.mErrorCode;
+	}
+
+	return *this;
 }
 
 int64_t File::peek(
