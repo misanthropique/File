@@ -13,6 +13,42 @@
 
 #include "File.hpp"
 #include "FileContext.hpp"
+#include "Util.hpp"
+
+static uint64_t __open_file(
+	const std::string& filepath,
+	File::IOFlag mode )
+{
+	std::string normalizedFilepath = _normalize_filepath( filepath );
+	std::string scheme = _get_scheme( normalizedFilepath );
+
+	// Check if the scheme is supported
+	if ( _scheme_supported( normalizedFilepath ) )
+	{
+		// Create the context
+		struct FileContext* context = _allocate_context();
+
+		// Get the function pointer for opening a file by scheme.
+		auto schemeOpenFile = _get_scheme_open( scheme );
+
+		// Open the file into the context
+		if ( not schemeOpenFile( context, normalizedFilepath ) )
+		{
+			// Error
+		}
+
+		// Get an identifier for the context
+		uint64_t identifier = _assign_file_identifier( context );
+
+		// Return identifier
+		return identifier;
+	}
+}
+
+static void __close_file(
+	uint64_t fileIdentifier )
+{
+}
 
 File::File() noexcept :
 	mFileIdentifier( 0 )
@@ -31,6 +67,17 @@ File::File(
 {
 	mFileIdentifier.store( other.mFileIdentifier.load() );
 	mErrorCode = other.mErrorCode;
+}
+
+File::File(
+	const std::string& filepath,
+	File::IOFlag mode )
+{
+	uint64_t fileIdentifier = __open_file( filepath, mode );
+
+	if ( 0 == fileIdentifier )
+	{
+	}
 }
 
 int64_t File::append(
