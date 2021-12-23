@@ -18,8 +18,13 @@ static std::atomic_uint64_t _G_FileIdentifierCounter( 1 );
 static std::unordered_map< uint64_t, struct FileContext* > _G_FileIdentifierContextMap;
 static std::mutex _G_FileIdentifierContextMapMutex;
 
+static const std::map< std::string, struct SchemeFunctionPointers > {
+	{ "file", scheme::file::__function_pointers }
+}
+
 struct FileContext* _allocate_context()
 {
+	struct FileContext* context = static_cast< struct FileContext* >( calloc( 1, sizeof( struct FileContext ) ) );
 }
 
 uint64_t _assign_file_identifier(
