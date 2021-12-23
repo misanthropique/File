@@ -63,20 +63,19 @@ void _release_context(
 {
 }
 
-#define MICROSECONDS_IN_SECOND ( 1000000.0L )
-
 void _update_io_stats(
-	double& sumInverseRates,
-	uint64_t& numberObservations,
+	struct FileContext& context,
+	uint32_t ioStat,
 	struct timeval& startTime,
 	struct timeval& endTime,
 	int64_t bytes )
 {
-	if ( 0 < bytes )
+	if ( ( 0 < bytes )
+		and ( ioStat < FILE_IO_STATS_SIZE ) )
 	{
 		long double duration = ( endTime.tv_usec - startTime.tv_usec )
 			+ MICROSECONDS_IN_SECOND * ( endTime.tv_sec - startTime.tv_sec );
-		sumInverseRates += duration / ( MICROSECONDS_IN_SECOND * bytes );
-		++numberObservations;
+		context._M_SumInverseRates[ ioStat ] += duration / ( MICROSECONDS_IN_SECOND * bytes );
+		context._M_NumberObservations[ ioStat ] += 1;
 	}
 }
