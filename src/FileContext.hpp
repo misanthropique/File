@@ -28,9 +28,9 @@ struct FileContext
 	File::IOFlag _M_Capabilities;
 	int _M_ErrorCode;
 
-	const char* ( *_F_error_string )();
-	void ( *_F_close )();
-	int64_t ( *_F_seek )()
+	const char* ( *_F_error_string )( struct FileContext* );
+	void ( *_F_close )( struct FileContext* );
+	int64_t ( *_F_seek )( struct FileContext*, int64_t, bool );
 	int64_t ( *_F_read )( struct FileContext*, uint8_t*, uint32_t, bool );
 	int64_t ( *_F_write )( struct FileContext*, uint8_t*, uint32_t, bool );
 };
