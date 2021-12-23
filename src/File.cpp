@@ -17,37 +17,41 @@
 
 static uint64_t __open_file(
 	const std::string& filepath,
-	File::IOFlag mode )
+	File::IOFlag mode,
+	int& errorCode )
 {
-	std::string normalizedFilepath = _normalize_filepath( filepath );
-	std::string scheme = _get_scheme( normalizedFilepath );
+	std::string normalizedFilepath, scheme;
 
-	// Check if the scheme is supported
-	if ( _scheme_supported( normalizedFilepath ) )
+	if ( not _normalize_filepath( normalizedFilepath, filepath ) )
 	{
-		// Create the context
-		struct FileContext* context = _allocate_context();
+		errorCode = EINVAL;
+		return 0;
+	}
 
-		// Get the function pointer for opening a file by scheme.
-		auto schemeOpenFile = _get_scheme_open( scheme );
+	struct FileContext* context = _allocate_context();
 
-		// Open the file into the context
-		if ( not schemeOpenFile( context, normalizedFilepath ) )
-		{
-			// Error
-		}
+	if ( not _open_uri( context, normalizedFilepath, mode, errorCode ) )
+	{
+		_free_context( context );
+		return 0;
+	}
 
-		// Get an identifier for the context
-		uint64_t identifier = _assign_file_identifier( context );
+	uint64_t identifier = _assign_identifier( context );
 
-		// Return identifier
+	if ( 0 != identifier )
+	{
 		return identifier;
 	}
+
+	_free_context( context );
 }
 
 static void __close_file(
 	uint64_t fileIdentifier )
 {
+	if ( 0 != fileIdentifier )
+	{
+	}
 }
 
 File::File() noexcept :
@@ -73,7 +77,7 @@ File::File(
 	const std::string& filepath,
 	File::IOFlag mode )
 {
-	uint64_t fileIdentifier = __open_file( filepath, mode );
+	uint64_t fileIdentifier = __open_file( filepath, mode, mErrorCode );
 
 	if ( 0 == fileIdentifier )
 	{
