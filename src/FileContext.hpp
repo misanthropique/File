@@ -77,8 +77,8 @@ void _release_context(
  * @param bytes The number of bytes written or read from the file.
  */
 void _update_io_stats(
-	double& sumInverseRates,
-	uint64_t& numberObservations,
+	struct FileContext& context,
+	uint32_t ioStat,
 	struct timeval& startTime,
 	struct timeval& endTime,
 	int64_t bytes );
