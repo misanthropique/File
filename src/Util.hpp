@@ -5,6 +5,8 @@
  */
 #pragma once
 
+#define MICROSECONDS_IN_SECOND ( 1000000.0L )
+
 /*
  * Normalize the given filepath to a URI.
  * Relative local paths will be converted to absolute
