@@ -124,8 +124,7 @@ int64_t File::append(
 		bytesWritten = context->_F_write( context, buffer, count, true );
 		gettimeofday( &endTime, nullptr );
 
-		_update_io_stats( context->_M_SumInverseRates[ FILE_IO_STATS_WRITE ],
-			context->_M_NumberObservations[ FILE_IO_STATS_WRITE ], startTime, endTime, bytesWritten );
+		_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, bytesWritten );
 
 		return bytesWritten;
 	}
@@ -240,8 +239,7 @@ int64_t File::peek(
 		bytesRead = context->_F_read( context, buffer, count, false );
 		gettimeofday( &endTime, nullptr );
 
-		_update_io_stats( context->_M_SumInverseRates[ FILE_IO_STATS_READ ],
-			context->_M_NumberObservations[ FILE_IO_STATS_READ ], startTime, endTime, bytesRead );
+		_update_io_stats( context, FILE_IO_STATS_READ, startTime, endTime, bytesRead );
 
 		return bytesRead;
 	}
@@ -290,8 +288,7 @@ int64_t File::read(
 		bytesRead = context->_F_read( context, buffer, count, true );
 		gettimeofday( &endTime, nullptr );
 
-		_update_io_stats( context->_M_SumInverseRates[ FILE_IO_STATS_READ ],
-			context->_M_NumberObservations[ FILE_IO_STATS_READ ], startTime, endTime, bytesRead );
+		_update_io_stats( context, FILE_IO_STATS_READ, startTime, endTime, bytesRead );
 
 		return bytesRead;
 	}
@@ -340,8 +337,7 @@ int64_t File::write(
 		bytesWritten = context->_F_write( context, buffer, count, false );
 		gettimeofday( &endTime, nullptr );
 
-		_update_io_stats( context->_M_SumInverseRates[ FILE_IO_STATS_WRITE ],
-			context->_M_NumberObservations[ FILE_IO_STATS_WRITE ], startTime, endTime, bytesWritten );
+		_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, bytesWritten );
 
 		return bytesWritten;
 	}
