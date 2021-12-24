@@ -28,11 +28,18 @@ struct FileContext
 	File::IOFlag _M_Capabilities;
 	int _M_ErrorCode;
 
+	void* _M_SchemeContext;
+
 	const char* ( *_F_error_string )( struct FileContext* );
 	void ( *_F_close )( struct FileContext* );
 	int64_t ( *_F_seek )( struct FileContext*, int64_t, bool );
 	int64_t ( *_F_read )( struct FileContext*, uint8_t*, uint32_t, bool );
 	int64_t ( *_F_write )( struct FileContext*, uint8_t*, uint32_t, bool );
+	// context, newSize, fill, grow, shrink
+	// reserve  -> ( -, -, -, true,  false )
+	// resize   -> ( -, -, -, true,  true  )
+	// truncate -> ( -, -, -, false, true  )
+	bool ( *_F_resize )( struct FileContext*, int64_t, uint8_t, bool, bool );
 };
 
 #define FILE_CAN_READ( context )  ( ( context )->_M_Capabilities & File::IOFlag::READ )
