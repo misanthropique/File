@@ -357,18 +357,18 @@ bool File::reserve(
 		struct timeval startTime, endTime;
 		int64_t newFileSize;
 
+		gettimeofday( &startTime, nullptr );
 		newFileSize = context->_F_resize( context, size, fill, false, true );
+		gettimeofday( &endTime, nullptr );
 
-		if ( newFileSize == context->_M_FileSize )
+		if ( newFileSize > context->_M_FileSize )
 		{
-			return false;
+			_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, newFileSize - context->_M_FileSize );
+			context->_M_FileSize = newFileSize;
+			return true;
 		}
 
-		// Seek to the previous end of file
-		// Write bytes out to file
-		// Seek back to previous file position
-
-		return true;
+		return false;
 	}
 
 	mErrorCode = ENOTSUP;
@@ -404,13 +404,13 @@ bool File::resize(
 		struct timeval startTime, endTime;
 		int64_t newFileSize;
 
+		gettimeofday( &startTime, nullptr );
 		newFileSize = context->_F_resize( context, size, fill, true, true );
+		gettimeofday( &endTime, nullptr );
 
 		if ( newFileSize > context->_M_FileSize )
 		{
-			// Seek to the previous end of file
-			// Write bytes out to file
-			// Seek back to previous file position
+			_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, newFileSize - context->_M_FileSize );
 		}
 
 		context->_M_FileSize = newFileSize;
@@ -419,6 +419,20 @@ bool File::resize(
 
 	mErrorCode = ENOTSUP;
 	return false;
+}
+
+int64_t File::size() const
+{
+	std::unique_lock< std::mutex > contextLock;
+	auto context = _get_context( mFileIdentifier, contextLock );
+
+	if ( nullptr == context )
+	{
+		mErrorCode = EBADF;
+		return -1;
+	}
+
+	return context->_M_FileSize;
 }
 
 bool File::truncate(
@@ -446,7 +460,6 @@ bool File::truncate(
 
 	if ( FILE_CAN_WRITE( context ) )
 	{
-		struct timeval startTime, endTime;
 		int64_t newFileSize;
 
 		newFileSize = context->_F_resize( context, size, fill, true, false );
