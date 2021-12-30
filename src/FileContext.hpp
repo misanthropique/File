@@ -35,10 +35,15 @@ struct FileContext
 	int64_t ( *_F_seek )( struct FileContext*, int64_t, bool );
 	int64_t ( *_F_read )( struct FileContext*, uint8_t*, uint32_t, bool );
 	int64_t ( *_F_write )( struct FileContext*, uint8_t*, uint32_t, bool );
-	// context, newSize, fill, grow, shrink
-	// reserve  -> ( -, -, -, true,  false )
-	// resize   -> ( -, -, -, true,  true  )
-	// truncate -> ( -, -, -, false, true  )
+	/*
+	 * Resize the file to the desired size.
+	 * signature: ( context: FileContext*, size: int64_t, fill: uint8_t, shrink: bool, grow: bool ) -> bool
+	 * True returned upon success, False on error.
+	 * The following mappings exist for the File API
+	 * reserve( size, fill ) ↦ _resize( context, size, fill, false, true );
+	 * resize( size, fill )  ↦ _resize( context, size, fill, true,  true );
+	 * truncate( size )      ↦ _resize( context, size, '\0', true,  false );
+	 */
 	bool ( *_F_resize )( struct FileContext*, int64_t, uint8_t, bool, bool );
 };
 
