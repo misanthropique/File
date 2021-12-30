@@ -175,6 +175,17 @@ double File::byteRate(
 	return std::nan( "0" );
 }
 
+void File::close()
+{
+	
+}
+
+std::string File::errorMessage(
+	bool clearAfterRead )
+{
+	
+}
+
 File& File::operator=(
 	File&& other )
 {
@@ -248,6 +259,26 @@ int64_t File::peek(
 	return -1;
 }
 
+int64_t File::position() const
+{
+	if ( 0 == mFileIdentifier )
+	{
+		mErrorCode = EBADF;
+		return -1;
+	}
+
+	std::unique_lock< std::mutex > contextLock;
+	auto context = _get_context( mFileIdentifier, contextLock );
+
+	if ( nullptr == context )
+	{
+		mErrorCode = EBADF;
+		return -1;
+	}
+
+	return context->_M_FilePosition;
+}
+
 int64_t File::read(
 	uint8_t* buffer,
 	uint32_t count )
@@ -295,6 +326,137 @@ int64_t File::read(
 
 	mErrorCode = ENOTSUP;
 	return -1;
+}
+
+bool File::reserve(
+	int64_t size,
+	uint8_t fill )
+{
+	if ( 0 > size )
+	{
+		mErrorCode = EINVAL;
+		return false;
+	}
+
+	std::unique_lock< std::mutex > contextLock;
+	auto context = _get_context( mFileIdentifier, contextLock );
+
+	if ( nullptr == context )
+	{
+		mErrorCode = EBADF;
+		return false;
+	}
+
+	if ( size <= context->_M_FileSize )
+	{
+		return true;
+	}
+
+	if ( FILE_CAN_WRITE( context ) )
+	{
+		struct timeval startTime, endTime;
+		int64_t newFileSize;
+
+		newFileSize = context->_F_resize( context, size, fill, false, true );
+
+		if ( newFileSize == context->_M_FileSize )
+		{
+			return false;
+		}
+
+		// Seek to the previous end of file
+		// Write bytes out to file
+		// Seek back to previous file position
+
+		return true;
+	}
+
+	mErrorCode = ENOTSUP;
+	return false;
+}
+
+bool File::resize(
+	int64_t size,
+	uint8_t fill )
+{
+	if ( 0 > size )
+	{
+		mErrorCode = EINVAL;
+		return false;
+	}
+
+	std::unique_lock< std::mutex > contextLock;
+	auto context = _get_context( mFileIdentifier, contextLock );
+
+	if ( nullptr == context )
+	{
+		mErrorCode = EBADF;
+		return false;
+	}
+
+	if ( size == context->_M_FileSize )
+	{
+		return true;
+	}
+
+	if ( FILE_CAN_WRITE( context ) )
+	{
+		struct timeval startTime, endTime;
+		int64_t newFileSize;
+
+		newFileSize = context->_F_resize( context, size, fill, true, true );
+
+		if ( newFileSize > context->_M_FileSize )
+		{
+			// Seek to the previous end of file
+			// Write bytes out to file
+			// Seek back to previous file position
+		}
+
+		context->_M_FileSize = newFileSize;
+		return size == newFileSize;
+	}
+
+	mErrorCode = ENOTSUP;
+	return false;
+}
+
+bool File::truncate(
+	int64_t size )
+{
+	if ( 0 > size )
+	{
+		mErrorCode = EINVAL;
+		return false;
+	}
+
+	std::unique_lock< std::mutex > contextLock;
+	auto context = _get_context( mFileIdentifier, contextLock );
+
+	if ( nullptr == context )
+	{
+		mErrorCode = EBADF;
+		return false;
+	}
+
+	if ( size >= context->_M_FileSize )
+	{
+		return true;
+	}
+
+	if ( FILE_CAN_WRITE( context ) )
+	{
+		struct timeval startTime, endTime;
+		int64_t newFileSize;
+
+		newFileSize = context->_F_resize( context, size, fill, true, false );
+
+		context->_M_FileSize = newFileSize;
+		return size == newFileSize;
+	}
+
+	mErrorCode = ENOTSUP;
+	return false;
 }
 
 int64_t File::write(
