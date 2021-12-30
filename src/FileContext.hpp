@@ -45,6 +45,7 @@ struct FileContext
 	 * truncate( size )      ↦ _resize( context, size, '\0', true,  false );
 	 */
 	int64_t ( *_F_resize )( struct FileContext*, int64_t, uint8_t, bool, bool );
+	bool ( *_F_sync )( struct FileContext* );
 };
 
 #define FILE_CAN_READ( context )  ( ( context )->_M_Capabilities & File::IOFlag::READ )
