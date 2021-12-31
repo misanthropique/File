@@ -14,42 +14,53 @@
 #include "FileContext.hpp"
 #include "Util.hpp"
 
+// Here is the list of supported schemes
+#include "scheme/scheme_file.hpp"
+
 static std::atomic_uint64_t _G_FileIdentifierCounter( 1 );
 static std::unordered_map< uint64_t, struct FileContext* > _G_FileIdentifierContextMap;
 static std::mutex _G_FileIdentifierContextMapMutex;
 
-static const std::map< std::string, struct SchemeFunctionPointers > {
-	{ "file", scheme::file::__function_pointers }
-}
+static const std::map< std::string, struct SchemeFunctionPointers > SUPPORTED_SCHEME_API_MAP {
+	{ SCHEME_FILE_CANONICAL_PREFIX, SCHEME_FILE_API }
+};
 
 struct FileContext* _allocate_context()
 {
 	struct FileContext* context = static_cast< struct FileContext* >( calloc( 1, sizeof( struct FileContext ) ) );
-}
 
-uint64_t _assign_file_identifier(
-	struct FileContext* context )
-{
-}
-
-uint64_t _create_context(
-	const std::string& filepath,
-	File::IOFlag mode )
-{
-	struct FileContext* context =
-		static_cast< struct FileContext* >(
-			std::calloc( 1, sizeof( struct FileContext ) ) );
-
-	if ( nullptr == context )
+	if ( nullptr != context )
 	{
-		throw std::bad_alloc();
+		// Initialize non-POD variables
 	}
 
-	new( static_cast< void* >( &context->_M_Mutex ) ) std::mutex();
-	context->_M_FileSize = int64_t( -1 );
-	context->_M_FilePosition = int64_t( -1 );
+	return context;
+}
 
-	return 
+bool _open_uri(
+	const FileContext* context,
+	const std::string& uri,
+	File::IOFlag mode,
+	int& errorCode )
+{
+	std::string scheme = _get_scheme( uri );
+
+	auto schemeAPIIterator = SUPPORTED_SCHEME_API_MAP.find( scheme );
+	if ( SUPPORTED_SCHEME_API_MAP.end() == schemeAPIIterator )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+uint64_t _register_context(
+	FileContext* context )
+{
+	uint64_t identifier = _G_FileIdentifierCounter++;
+	std::lock_guard mapLock( _G_FileIdentifierContextMapMutex );
+	_G_FileIdentifierContextMap[ identifier ] = context;
+	return identifier;
 }
 
 struct FileContext* _get_context(
@@ -61,6 +72,14 @@ struct FileContext* _get_context(
 void _release_context(
 	uint64_t fileIdentifier )
 {
+	std::lock_guard mapLock( _G_FileIdentifierContextMapMutex );
+	struct FileContext* context = _G_FileIdentifierContextMap[ fileIdentifier ];
+	if ( 1 == context->_M_ReferenceCount-- )
+	{
+		// Remove the context from the map.
+		// Release the lock.
+		// close the resource.
+	}
 }
 
 void _update_io_stats(
