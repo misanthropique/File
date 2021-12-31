@@ -102,7 +102,7 @@ bool _open_uri(
  * @param context A pointer to the context to register.
  * @return A file identifier that the context is registered to.
  */
-int64_t _register_context(
+uint64_t _register_context(
 	FileContext* context );
 
 /*
