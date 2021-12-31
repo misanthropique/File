@@ -9,6 +9,20 @@
 #include <cstdint>
 #include <string>
 
+/*
+ * TODO:
+ * [ ] lock
+ * [ ] pread
+ * [ ] pwrite
+ * [ ] UserCredentials
+ */
+
+/**
+ * A class for abstracting the details of files regardless of type, location, or scheme.
+ * I'm tired of having to use different interfaces for local versus remote files. Sure I'll have
+ * to implement the details here, but at least I'll have this available to me in the future
+ * when I need it.
+ */
 class File
 {
 private:
