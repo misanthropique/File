@@ -50,6 +50,7 @@ struct FileContext
 
 #define FILE_CAN_READ( context )  ( ( context )->_M_Capabilities & File::IOFlag::READ )
 #define FILE_CAN_WRITE( context ) ( ( context )->_M_Capabilities & File::IOFlag::WRITE )
+#define FILE_CAN_SEEK( context )  ( ( context )->_M_Capabilities & File::IOFlag::SEEK )
 
 /*
  * Create a context for the requested file. Should a context already
