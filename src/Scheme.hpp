@@ -66,4 +66,24 @@ struct SchemeAPI
 	 * @return The number of bytes written out to the resource is returned.
 	 */
 	int64_t ( *_F_write )( struct FileContext*, const uint8_t*, uint32_t, bool );
+
+	/**
+	 * Resize the file to the requested number of bytes. There are 2 control flags
+	 * that enable shrinking and growing the file should the requested size be less than
+	 * or greater than the current file size, respectively.
+	 * @param context Pointer to a FileContext struct.
+	 * @param size The requested size of the file in bytes.
+	 * @param fill The byte value to fill the new bytes with.
+	 * @param shrink Is shrinking the file permitted.
+	 * @param grow Is growing the file permitted.
+	 * @return The new size of the file, in bytes, is returned.
+	 */
+	int64_t ( *_F_resize )( struct FileContext*, int64_t, uint8_t, bool, bool );
+
+	/**
+	 * Synchronize the contents of the memory buffer with the resource.
+	 * @param context Pointer to a FileContext struct.
+	 * @return False is returned on error, True is returned on success or no-op.
+	 */
+	bool ( *_F_sync )( struct FileContext* );
 };
