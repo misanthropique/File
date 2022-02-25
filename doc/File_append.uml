@@ -1,0 +1,48 @@
+@startuml
+
+participant File << (C,#ADD1B2) >>
+participant FileContext << (C,#ADD1B2) >>
+participant "<sys/time.h>" as SystemTime
+
+[-> File ++: append( buffer, count )
+
+alt mFileIdentifier is Zero
+	File -> File: mErrorCode = EBADF
+	[<-- File: return -1
+end
+
+alt buffer is nullptr
+	File -> File: mErrorCode = ( 0 != count ) ? EINVAL : 0
+	[<-- File: return -( 0 != count )
+end
+
+alt count is Zero
+	File -> File: mErrorCode = 0
+	[<-- File: return 0
+end
+
+File -> File: context = _get_context( mFileIdentifier, contextLock )
+
+alt context is nullptr
+	File -> File: mErrorCode = EBADF
+	[<-- File: return -1
+end
+
+alt FILE_CAN_WRITE( context )
+	File -> SystemTime ++: gettimeofday( &startTime, nullptr )
+	File <-- SystemTime --: ignoreIOStats |= ( 0 != return value )
+	File -> FileContext ++: _F_write( context, buffer, count, true )
+	File <-- FileContext --: bytesWritten
+	File -> SystemTime ++: gettimeofday( &endTime, nullptr )
+	File <-- SystemTime --: ignoreIOStats |= ( 0 != return value )
+	alt not ignoreIOStats
+		File -> File ++: _update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, bytesWritten )
+		File --> File --:
+	end
+	[<-- File: return bytesWritten
+end
+
+File -> File: mErrorCode = ENOTSUP
+[<-- File --: return -1
+
+@enduml
