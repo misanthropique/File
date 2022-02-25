@@ -117,14 +117,26 @@ int64_t File::append(
 
 	if ( FILE_CAN_WRITE( context ) )
 	{
+		bool ignoreIOStats = false;
 		struct timeval startTime, endTime;
 		int64_t bytesWritten;
 
-		gettimeofday( &startTime, nullptr );
-		bytesWritten = context->_F_write( context, buffer, count, true );
-		gettimeofday( &endTime, nullptr );
+		if ( 0 != gettimeofday( &startTime, nullptr ) )
+		{
+			ignoreIOStats = true;
+		}
 
-		_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, bytesWritten );
+		bytesWritten = context->_F_write( context, buffer, count, true );
+
+		if ( ( not ignoreIOStats ) and ( 0 != gettimeofday( &endTime, nullptr ) ) )
+		{
+			ignoreIOStats = true;
+		}
+
+		if ( not ignoreIOStats )
+		{
+			_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, bytesWritten );
+		}
 
 		return bytesWritten;
 	}
@@ -243,14 +255,26 @@ int64_t File::peek(
 
 	if ( FILE_CAN_READ( context ) )
 	{
+		bool ignoreIOStats = false;
 		struct timeval startTime, endTime;
 		int64_t bytesRead;
 
-		gettimeofday( &startTime, nullptr );
-		bytesRead = context->_F_read( context, buffer, count, false );
-		gettimeofday( &endTime, nullptr );
+		if ( 0 != gettimeofday( &startTime, nullptr ) )
+		{
+			ignoreIOStats = true;
+		}
 
-		_update_io_stats( context, FILE_IO_STATS_READ, startTime, endTime, bytesRead );
+		bytesRead = context->_F_read( context, buffer, count, false );
+
+		if ( ( not ignoreIOStats ) and ( 0 != gettimeofday( &endTime, nullptr ) ) )
+		{
+			ignoreIOStats = true;
+		}
+
+		if ( not ignoreIOStats )
+		{
+			_update_io_stats( context, FILE_IO_STATS_READ, startTime, endTime, bytesRead );
+		}
 
 		return bytesRead;
 	}
@@ -312,14 +336,26 @@ int64_t File::read(
 
 	if ( FILE_CAN_READ( context ) )
 	{
+		bool ignoreIOStats = false;
 		struct timeval startTime, endTime;
 		int64_t bytesRead;
 
-		gettimeofday( &startTime, nullptr );
-		bytesRead = context->_F_read( context, buffer, count, true );
-		gettimeofday( &endTime, nullptr );
+		if ( 0 != gettimeofday( &startTime, nullptr ) )
+		{
+			ignoreIOStats = true;
+		}
 
-		_update_io_stats( context, FILE_IO_STATS_READ, startTime, endTime, bytesRead );
+		bytesRead = context->_F_read( context, buffer, count, true );
+
+		if ( ( not ignoreIOStats ) and ( 0 != gettimeofday( &endTime, nullptr ) ) )
+		{
+			ignoreIOStats = true;
+		}
+
+		if ( not ignoreIOStats )
+		{
+			_update_io_stats( context, FILE_IO_STATS_READ, startTime, endTime, bytesRead );
+		}
 
 		return bytesRead;
 	}
@@ -354,16 +390,29 @@ bool File::reserve(
 
 	if ( FILE_CAN_WRITE( context ) )
 	{
+		bool ignoreIOStats = false;
 		struct timeval startTime, endTime;
 		int64_t newFileSize;
 
-		gettimeofday( &startTime, nullptr );
+		if ( 0 != gettimeofday( &startTime, nullptr ) )
+		{
+			ignoreIOStats = true;
+		}
+
 		newFileSize = context->_F_resize( context, size, fill, false, true );
-		gettimeofday( &endTime, nullptr );
+
+		if ( ( not ignoreIOStats ) and ( 0 != gettimeofday( &endTime, nullptr ) ) )
+		{
+			ignoreIOStats = true;
+		}
 
 		if ( newFileSize > context->_M_FileSize )
 		{
-			_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, newFileSize - context->_M_FileSize );
+			if ( not ignoreIOStats )
+			{
+				_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, newFileSize - context->_M_FileSize );
+			}
+
 			context->_M_FileSize = newFileSize;
 			return true;
 		}
@@ -401,16 +450,28 @@ bool File::resize(
 
 	if ( FILE_CAN_WRITE( context ) )
 	{
+		bool ignoreIOStats = false;
 		struct timeval startTime, endTime;
 		int64_t newFileSize;
 
-		gettimeofday( &startTime, nullptr );
+		if ( 0 != gettimeofday( &startTime, nullptr ) )
+		{
+			ignoreIOStats = true;
+		}
+
 		newFileSize = context->_F_resize( context, size, fill, true, true );
-		gettimeofday( &endTime, nullptr );
+
+		if ( ( not ignoreIOStats ) and ( 0 != gettimeofday( &endTime, nullptr ) ) )
+		{
+			ignoreIOStats = true;
+		}
 
 		if ( newFileSize > context->_M_FileSize )
 		{
-			_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, newFileSize - context->_M_FileSize );
+			if ( not ignoreIOStats )
+			{
+				_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, newFileSize - context->_M_FileSize );
+			}
 		}
 
 		context->_M_FileSize = newFileSize;
@@ -505,14 +566,26 @@ int64_t File::write(
 
 	if ( FILE_CAN_WRITE( context ) )
 	{
+		bool ignoreIOStats = false;
 		struct timeval startTime, endTime;
 		int64_t bytesWritten;
 
-		gettimeofday( &startTime, nullptr );
-		bytesWritten = context->_F_write( context, buffer, count, false );
-		gettimeofday( &endTime, nullptr );
+		if ( 0 != gettimeofday( &startTime, nullptr ) )
+		{
+			ignoreIOStats = true;
+		}
 
-		_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, bytesWritten );
+		bytesWritten = context->_F_write( context, buffer, count, false );
+
+		if ( ( not ignoreIOStats ) and ( 0 != gettimeofday( &endTime, nullptr ) ) )
+		{
+			ignoreIOStats = true;
+		}
+
+		if ( not ignoreIOStats )
+		{
+			_update_io_stats( context, FILE_IO_STATS_WRITE, startTime, endTime, bytesWritten );
+		}
 
 		return bytesWritten;
 	}
