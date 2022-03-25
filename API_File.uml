@@ -1,0 +1,34 @@
+@startuml
+class "File" {
++{method} File();
++{method} File( const std::string& filepath, File::IOFlag mode );
++{method} File( const File& other );
++{method} File( File&& other ) noexcept;
++{method} ~File();
++{method} int64_t append( const uint8_t* buffer, uint32_t count );
++{method} double byteRate( File::IOFlag ioFlag = File::IOFlag::Read ) const;
++{method} void close();
++{method} std::string errorMessage( bool clearAfterRead = true );
++{method} bool open( const std::string& filepath, File::IOFlag mode );
++{method} File& operator=( const File& other );
++{method} File& operator=( File&& other );
++{method} int64_t peek( uint8_t* buffer, uint32_t count );
++{method} int64_t position() const;
++{method} int64_t read( uint8_t* buffer, uint32_t count );
++{method} bool reserve( int64_t size, uint8_t fill = '\0' );
++{method} bool resize( int64_t size, uint8_t fill = '\0' );
++{method} int64_t seek( int64_t offset, bool relative = false );
++{method} int64_t size() const;
++{method} bool sync();
++{method} bool truncate( int64_t size );
++{method} int64_t write( const uint8_t* buffer, uint32_t count );
+}
+
+enum "File::IOFlag" {
+READ
+WRITE
+SEEK
+}
+
+"File" +-- "File::IOFlag"
+@enduml
